@@ -1,46 +1,101 @@
 version: '2'
 
 services:
-  host_a:
-    build: .
+  local:
+    build: ./server
+    volumes:
+      - .:/var/www
+    working_dir: /var/www
+    networks:
+      - localProxy
+      - localTesting
+      - localDatabase
+
+  production:
+    build: ./server
     volumes:
       - "./authorized_keys:/home/user/.ssh/authorized_keys"
-    ports:
-      - "2208:22"
+      - "./server/testApp:/var/www/production"
+      - "./server/testApp:/var/www/staging"
     networks:
-      - hostAB
-  host_b:
-    build: .
+      - proxyProduction
+      - productionDatabase
+      - stagingDatabase
+
+  proxy:
+    build: ./server
     volumes:
       - "./authorized_keys:/home/user/.ssh/authorized_keys"
     networks:
-      - hostAB
-      - hostBC
-  host_c:
-    build: .
+      - localProxy
+      - testingProxy
+      - proxyProduction
+
+  testing:
+    build: ./server
     volumes:
       - "./authorized_keys:/home/user/.ssh/authorized_keys"
-      - "./testApp:/var/www/prod"
-      - "./testApp:/var/www/testing"
+      - "./server/testApp:/var/www/testing"
     networks:
-      - hostBC
-      - database
-  database:
-    image: mysql:5.7
+      - testingProxy
+      - localTesting
+      - testingDatabase
+
+  local-db:
+    build: ./database
     networks:
-      - database
-    ports:
-      - "2206:3306"
+      - localDatabase
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: localPw
       MYSQL_DATABASE: sequelmovie
     volumes:
-      - ./db-seed:/docker-entrypoint-initdb.d
+      - ./database/db-seed:/docker-entrypoint-initdb.d
+
+  production-db:
+    build: ./database
+    networks:
+      - productionDatabase
+    environment:
+      MYSQL_ROOT_PASSWORD: productionPw
+      MYSQL_DATABASE: sequelmovie
+    volumes:
+      - ./database/db-seed:/docker-entrypoint-initdb.d
+
+  staging-db:
+    build: ./database
+    networks:
+      - stagingDatabase
+    environment:
+      MYSQL_ROOT_PASSWORD: stagingPw
+      MYSQL_DATABASE: sequelmovie
+    volumes:
+      - ./database/db-seed:/docker-entrypoint-initdb.d
+
+  testing-db:
+    build: ./database
+    networks:
+      - testingDatabase
+    environment:
+      MYSQL_ROOT_PASSWORD: testingPw
+      MYSQL_DATABASE: sequelmovie
+    volumes:
+      - ./database/db-seed:/docker-entrypoint-initdb.d
 
 networks:
-  hostAB:
+  localProxy:
     driver: bridge
-  hostBC:
+  localTesting:
     driver: bridge
-  database:
+  proxyProduction:
+    driver: bridge
+  testingProxy:
+    driver: bridge
+
+  localDatabase:
+    driver: bridge
+  productionDatabase:
+    driver: bridge
+  stagingDatabase:
+    driver: bridge
+  testingDatabase:
     driver: bridge

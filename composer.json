@@ -1,0 +1,19 @@
+{
+  "config": {
+    "process-timeout": 0
+  },
+  "require": {
+    "phpunit/phpunit": "8.*",
+    "phpsu/phpsu": "@beta",
+    "spatie/phpunit-watcher": "1.*"
+  },
+  "scripts": {
+    "test": [
+      "docker-compose up -d",
+      "docker-compose exec -u1000 local bash -c 'vendor/bin/phpunit tests --color=always --order-by=defects,random'"
+    ],
+    "test:watch": [
+      "bash runTestWatch.sh"
+    ]
+  }
+}
