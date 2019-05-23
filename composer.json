@@ -7,10 +7,16 @@
     "phpsu/phpsu": "@beta",
     "spatie/phpunit-watcher": "1.*"
   },
+  "autoload-dev": {
+    "psr-4": {
+      "PhpsuTestcase\\FunctionalTest\\": "tests"
+    }
+  },
   "scripts": {
     "test": [
       "docker-compose up -d",
-      "docker-compose exec -u1000 local bash -c 'vendor/bin/phpunit tests --color=always --order-by=defects,random'"
+      "sleep 60",
+      "docker-compose exec -T -u1000 local bash -c 'vendor/bin/phpunit tests --color=always --order-by=defects,random'"
     ],
     "test:watch": [
       "bash runTestWatch.sh"
