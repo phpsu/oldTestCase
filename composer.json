@@ -14,9 +14,10 @@
   },
   "scripts": {
     "test": [
+      "mkdir -p tmp/localInstance/var",
       "docker-compose up -d",
-      "sleep 60",
-      "docker-compose exec -T -u1000 local bash -c 'vendor/bin/phpunit tests --color=always --order-by=defects,random'"
+      "echo 'sleep 60'; sleep 60",
+      "docker-compose exec -T local bash -c 'vendor/bin/phpunit tests --color=always --order-by=defects,random'"
     ],
     "test:watch": [
       "bash runTestWatch.sh"
